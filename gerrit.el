@@ -391,6 +391,7 @@ A section in the respective process buffer is created."
   ;; TODO check that all to-be-uploaded commits have a changeid line
 
   (let (assignee
+        rebase
         push-opts
         (remote (gerrit-get-remote))
         (refspec (gerrit-upload--get-refspec)))
@@ -415,11 +416,18 @@ A section in the respective process buffer is created."
                     (push "ready" push-opts))
                    ((string= "wip" arg)
                     (push "wip" push-opts))
+                   ((string= "rebase" arg)
+                    (setq rebase t))
                    (t
                     (error (format "no match for arg: %s" arg)))))
 
     (when push-opts
       (setq refspec (concat refspec "%" (s-join "," push-opts))))
+
+    (when rebase
+      ;; TODO if there are rebase problems, remember transient choices
+      ;; and use them for the next call to gerrit-upload
+      nil)
 
     (gerrit-push-and-assign
      assignee
@@ -435,6 +443,7 @@ A section in the respective process buffer is created."
    (gerrit-upload:--assignee)
    ("w" "Work in Progress" "wip")
    ("v" "Ready for Review" "ready")
+   ("R" "Rebase" "rebase")
    (gerrit-upload:--topic)
   ]
   ["Actions"
